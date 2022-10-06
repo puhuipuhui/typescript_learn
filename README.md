@@ -4,7 +4,7 @@
 
 ## 学习内容
 
-1、[基本类型]()
+1、[TS 基本类型]([typescript_learn: 贪吃蛇游戏（练习 typescript ） - Gitee.com](https://gitee.com/pu_huihui/typescript_learn/tree/branch_1/))
 
 2、[远程更改]()
 
