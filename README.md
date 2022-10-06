@@ -1,141 +1,201 @@
-# 基本类型
+# 编译选项
 
-指定变量的类型，使得变量只存储某种类型的值
+## 编译指定文件
 
-## 语法
+编译文件时，使用 `-w` 指令后，`TS`编译器会自动监视文件的变化，并在文件发生变化时对文件进行重新编译。
+
+1、编译
+
+```cmd
+// 安装
+npm install -g typescript
+```
+
+2、编译
 
 ```javascript
-let 变量: 类型;
+// 编译 xxx.ts 为 xxx.js文件 ,并监听该文件
+  tsc xxx.ts -w
+```
 
-let 变量: 类型 = 值;
+## 编译整个项目（自动）
 
-function fn(参数: 类型, 参数: 类型): 类型{
-    ...
+如果终端直接 使用`tsc`指令，则可以自动将当前项目下的所有`ts`文件编译为`js`文件。
+但是能直接使用`tsc`命令的前提是：要先在项目根目录下创建一个`ts`的配置文件 `tsconfig.json`
+
+`tsconfig.json`的配置示例：
+
+```json
+// 所有`src`目录和`tests`目录下的文件都会被编译
+"include":["src/**/*", "tests/**/*"]
+"exclude": ["./src/hello/**/*"]
+"extends": "./configs/base"
+"files": [
+    "core.ts",
+    "sys.ts"
+  ],
+"compilerOptions": {
+    "target": "ES6"
 }
 ```
 
-##  自动类型判断
+## 配置选项
 
-（1）`TS`拥有自动的类型判断机制；
-（2）如果变量声明和赋值同时进行，`TS`编译器会自动判断变量的类型，可以省略掉类型声明
+### include
 
-##  类型种类
+* 定义希望被编译文件所在的目录
+* 默认值：["**/*"]
 
-类型	  |例子  |	描述
-|--|--|--|
-number	  |1, -33, 2.5 |	任意数字
-string	  |'hi', "hi", hi |	任意字符串
-boolean  |	true、false	| 布尔值
-字面量	  |其本身|	限制变量的值就是该字面量的值
-any  |	*	|任意类型
-unknown	  |*|	类型安全的any
-void	  | 空值（undefined）	| 没有值（或undefined）
-never   |	没有值 |	不能是任何值
-object  |	{name:'孙悟空'}	| 任意的JS对象
-array  |	[1,2,3]	| 任意JS数组
-tuple  |	 [4,5]	 | TS 新增元组类型，**固定**长度数组
-enum  |	enum{A, B}	| 枚举，TS 中新增类型
-
-【案例】
-
-```javascript
- // 1、number
-let decimal: number = 6;
-let hex: number = 0xf00d;
-let binary: number = 0b1010;
-let octal: number = 0o744;
-let big: bigint = 100n;
-
-// 2、boolean
-let isDone: boolean = false;
-
-// 3、string
-let color: string = "blue";
-color = 'red';
-
-// 4、string 
-let fullName: string = `Bob Bobbington`;
-let age: number = 37;
-let sentence: string = `Hello, my name is ${fullName}`
-
-// 5、字面量
-// 可以使用 或语法 包含的所有字符
-let color: 'red' | 'blue' | 'black';
-let num: 1 | 2 | 3 | 4 | 5;
-
-// 6、any
-let d: any = 4;
-d = 'hello';
-d = true;
-// 7、unknown
-let notSure: unknown = 4;
-notSure = 'hello';
-
-// 8、void
-// 定义函数时，表示没有返回值，可以为 unknown 、null
-let unusable: void = undefined;
-
-
-// 9、never
-// 定义函数时，表示不返回，甚至不可以为 unknown 、null
-function error(message: string): never {
-  throw new Error(message);
-}
-
-// 10、对象 object（没啥用） 
-let obj: object = {};
-// {} 用来指定对象中可以包含哪些类型
-let b:{name:string,age?:number}
-b={name:'猪八戒'}
-// [proName:String]: any 表示任意类型属性
-let c:{name:string,age?:number,[somename:string]:any}
-c={name:'猪八戒',age: 23,gander: 'man'}
-
-// 11、array 对象类型
-let list: number[] = [1, 2, 3];
-let list: Array<number> = [1, 2, 3];
-
-// 12、tuple 元组
-let x: [string, number];
-x = ["hello", 10]; 
-
-// 13、enum 枚举
-enum Color {
-  Red,
-  Green,
-  Blue,
-}
-let c: Color = Color.Green;
-
-enum Color {
-  Red = 1,
-  Green,
-  Blue,
-}
-let c: Color = Color.Green;
-
-enum Color {
-  Red = 1,
-  Green = 2,
-  Blue = 4,
-}
-let c: Color = Color.Green;
+```json
+  "include":["src/**/*", "tests/**/*"]
 ```
 
-## 类型断言
+上述示例中，所有`src`目录和`tests`目录下的文件都会被编译
 
-有些情况下，变量的类型对于我们来说是很明确，但是`TS`编译器却并不清楚，此时，可以通过类型断言来告诉编译器变量的类型，断言有两种形式：
+### exclude
 
-（1）`as` 语法
+* 定义不被编译排除的目录
+* 默认值：["node_modules", "bower_components", "jspm_packages"]
 
-```javascript
-let someValue: unknown = "this is a string";
-let strLength: number = (someValue as string).length;
+```json
+  "exclude": ["./src/hello/**/*"]
 ```
 
-（2）`<>` 语法
+上述示例中，`src`下`hello`目录下的文件都不会被编译
+
+### files
+
+* 指定被编译文件的列表，只有需要编译的文件少时才会用到
+
+```json
+"files": [
+    "core.ts",
+    "sys.ts",
+    "types.ts",
+    "scanner.ts",
+    "parser.ts",
+    "utilities.ts",
+    "binder.ts",
+    "checker.ts",
+    "tsc.ts"
+  ]
+```
+
+上述列表中的文件都会被`TS`编译器所编译
+
+### compilerOptions
+
+* 编译选项是配置文件中重要、复杂的配置选项
+* 在`compilerOptions`中包含多个子选项，完成对编译的配置
+
+ 项目选项：`target`、`lib`、`module`、`outDir`、`outFile`、`allowJs`、`checkJs`、`removeComments`、`noEmit`、`sourceMap`、……
+
+ **target**
+
+ * 设置`ts`代码编译的目标版本
+ * 可选值：
+   ES3（默认）、ES5、ES6/ES2015、ES7/ES2016、ES2017、ES2018、ES2019、ES2020、ESNext
+ * 示例：
 
 ```javascript
-let someValue: unknown = "this is a string";
-let strLength: number = (<string>someValue).length;
+"compilerOptions": {
+    "target": "ES6"
+}
 ```
+
+**lib**（一般设置，用默认配置）
+
+* 指定代码运行时所包含的库（宿主环境）
+* 可选值：
+  ES5、ES6/ES2015、ES7/ES2016、ES2017、ES2018、ES2019、ES2020、ESNext、DOM、WebWorker、ScriptHost ......
+* 示例：
+
+```javascript
+"compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+}
+```
+
+**module**
+
+* 设置编译后代码使用的模块化系统
+* 可选值：
+  CommonJS、UMD、AMD、System、ES2020、ESNext、None
+* 示例
+
+```javascript
+"compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "CommonJS"
+}
+```
+
+**outDir**
+
+* 编译后文件的所在目录
+* 默认情况下，编译后的`js`文件会和`ts`文件位于相同的目录，设置`outDir`后可以改变编译后文件的位置
+* 示例：
+
+```javascript
+"compilerOptions": {
+ 	"target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "CommonJS"
+    "outDir": "dist"
+}
+```
+
+设置后编译后的`js`文件将会生成到`dist`目录
+
+**outFile**
+
+* 将所有的文件编译为一个`js`文件
+* 默认会将所有的编写在全局作用域中的代码合并为一个`js`文件，如果`module`制定了`None`、`System`或`AMD`则会将模块一起合并到文件之中
+* 示例：
+
+```json
+"compilerOptions": {
+	"target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "CommonJS"
+    "outDir": "dist"
+    "outFile": "dist/app.js"
+}
+```
+
+**allowJs**
+
+* 是否对`js`文件编译
+
+**checkJs**
+
+* 是否对`js`文件进行检查
+* 示例：
+
+```javascript
+"compilerOptions": {
+    "allowJs": true,
+    "checkJs": true
+}
+```
+
+**removeComments**
+
+* 是否删除注释
+* 默认值：`false`
+
+**严格检查**：`alwaysStrict`、`strict`
+
+**noEmit**
+
+* 不对代码进行编译
+* 默认值：`false`
+
+**noEmitOnError**
+
+* 有错误的情况下不进行编译
+* 默认值：`false`
+
+# 
