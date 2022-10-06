@@ -1,201 +1,162 @@
-# 编译选项
+# TypeScript 打包（webpack）
 
-## 编译指定文件
+## webpack 打包
 
-编译文件时，使用 `-w` 指令后，`TS`编译器会自动监视文件的变化，并在文件发生变化时对文件进行重新编译。
-
-1、编译
+1、构建工具
 
 ```cmd
-// 安装
-npm install -g typescript
+npm i -D webpack webpack-cli webpack-dev-server typescript ts-loader clean-webpack-plugin
 ```
 
-2、编译
+共安装了7个包:
+
+webpack：构建工具 webpack
+webpack-cli：webpack 的命令行工具
+webpack-dev-server：webpack 的开发服务器
+typescript：ts 编译器
+ts-loader：ts 加载器，用于在 webpack 中编译 ts 文件
+html-webpack-plugin：webpack 中 html 插件，用来自动创建 html 文件
+clean-webpack-plugin：webpack 中的清除插件，每次构建都会先清除目录
+
+2、配置 webpack
+根目录下创建 `webpack`的配置文件`webpack.config.js`：
 
 ```javascript
-// 编译 xxx.ts 为 xxx.js文件 ,并监听该文件
-  tsc xxx.ts -w
-```
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
-## 编译整个项目（自动）
+module.exports = {
+   optimization:{
+       minimize: false // 关闭代码压缩，可选
+   },
 
-如果终端直接 使用`tsc`指令，则可以自动将当前项目下的所有`ts`文件编译为`js`文件。
-但是能直接使用`tsc`命令的前提是：要先在项目根目录下创建一个`ts`的配置文件 `tsconfig.json`
+   entry: "./src/index.ts",
 
-`tsconfig.json`的配置示例：
+   devtool: "inline-source-map",
 
-```json
-// 所有`src`目录和`tests`目录下的文件都会被编译
-"include":["src/**/*", "tests/**/*"]
-"exclude": ["./src/hello/**/*"]
-"extends": "./configs/base"
-"files": [
-    "core.ts",
-    "sys.ts"
-  ],
-"compilerOptions": {
-    "target": "ES6"
+   devServer: {
+       contentBase: './dist'
+   },
+
+   output: {
+       path: path.resolve(__dirname, "dist"),
+       filename: "bundle.js",
+       environment: {
+           arrowFunction: false // 关闭webpack的箭头函数，可选
+       }
+   },
+
+   resolve: {
+       extensions: [".ts", ".js"]
+   },
+
+   module: {
+       rules: [
+           {
+               test: /\.ts$/,
+               use: {
+                   loader: "ts-loader"     
+               },
+               exclude: /node_modules/
+           }
+       ]
+   },
+
+   plugins: [
+       new CleanWebpackPlugin(),
+       new HtmlWebpackPlugin({
+           title:'TS测试'
+       }),
+   ]
 }
 ```
 
-## 配置选项
-
-### include
-
-* 定义希望被编译文件所在的目录
-* 默认值：["**/*"]
-
-```json
-  "include":["src/**/*", "tests/**/*"]
-```
-
-上述示例中，所有`src`目录和`tests`目录下的文件都会被编译
-
-### exclude
-
-* 定义不被编译排除的目录
-* 默认值：["node_modules", "bower_components", "jspm_packages"]
-
-```json
-  "exclude": ["./src/hello/**/*"]
-```
-
-上述示例中，`src`下`hello`目录下的文件都不会被编译
-
-### files
-
-* 指定被编译文件的列表，只有需要编译的文件少时才会用到
-
-```json
-"files": [
-    "core.ts",
-    "sys.ts",
-    "types.ts",
-    "scanner.ts",
-    "parser.ts",
-    "utilities.ts",
-    "binder.ts",
-    "checker.ts",
-    "tsc.ts"
-  ]
-```
-
-上述列表中的文件都会被`TS`编译器所编译
-
-### compilerOptions
-
-* 编译选项是配置文件中重要、复杂的配置选项
-* 在`compilerOptions`中包含多个子选项，完成对编译的配置
-
- 项目选项：`target`、`lib`、`module`、`outDir`、`outFile`、`allowJs`、`checkJs`、`removeComments`、`noEmit`、`sourceMap`、……
-
- **target**
-
- * 设置`ts`代码编译的目标版本
- * 可选值：
-   ES3（默认）、ES5、ES6/ES2015、ES7/ES2016、ES2017、ES2018、ES2019、ES2020、ESNext
- * 示例：
+3、配置 TS 编译选项
+根目录下创建`tsconfig.json`，配置可以根据自己需要
 
 ```javascript
-"compilerOptions": {
-    "target": "ES6"
+{
+   "compilerOptions": {
+       "target": "ES2015",
+       "module": "ES2015",
+       "strict": true
+   }
 }
 ```
 
-**lib**（一般设置，用默认配置）
-
-* 指定代码运行时所包含的库（宿主环境）
-* 可选值：
-  ES5、ES6/ES2015、ES7/ES2016、ES2017、ES2018、ES2019、ES2020、ESNext、DOM、WebWorker、ScriptHost ......
-* 示例：
+4、修改 package.json 配置
+修改 `package.json` 添加如下配置
 
 ```javascript
-"compilerOptions": {
-    "target": "ES6",
-    "lib": ["ES6", "DOM"],
-}
+   "scripts": {
+       "test": "echo \"Error: no test specified\" && exit 1",
+       // webpack 打包 
+       "build": "webpack",
+       // webpack 服务器启动 并在谷歌启动 实时打包并更新页面
+       "start": "webpack serve --open chrome.exe"
+   },
 ```
 
-**module**
+## Babel 适配
 
-* 设置编译后代码使用的模块化系统
-* 可选值：
-  CommonJS、UMD、AMD、System、ES2020、ESNext、None
-* 示例
+除了`webpack`，开发中还经常需要结合`babel`来对代码进行转换，以使其可以兼容到更多的浏览器，在上述步骤的基础上，通过以下步骤再将`babel`引入到项目中；
+
+> TS 编译成 JS 代码，只支持部分代码简单的转换，
+> 对于例如：Promise 等 ES6 特性，TS 无法直接转换，这时还要用到 babel 来做转换；
+
+安装依赖包：
 
 ```javascript
-"compilerOptions": {
-    "target": "ES6",
-    "lib": ["ES6", "DOM"],
-    "module": "CommonJS"
-}
+npm i -D @babel/core @babel/preset-env babel-loader core-js
 ```
 
-**outDir**
+共安装了4个包，分别是：
 
-* 编译后文件的所在目录
-* 默认情况下，编译后的`js`文件会和`ts`文件位于相同的目录，设置`outDir`后可以改变编译后文件的位置
-* 示例：
+@babel/core：babel 的核心工具
+
+@babel/preset-env：babel 的预定义环境
+
+@babel-loader：babel 在webpack 中的加载器
+
+core-js：core-js 用来使老版本的浏览器支持新版 ES 语法
+
+修改`webpack.config.js`配置文件:
 
 ```javascript
-"compilerOptions": {
- 	"target": "ES6",
-    "lib": ["ES6", "DOM"],
-    "module": "CommonJS"
-    "outDir": "dist"
+module: {
+    rules: [
+        {
+            test: /\.ts$/,
+            use: [
+                {
+                    loader: "babel-loader",
+                    options:{
+                        presets: [
+                            [
+                                "@babel/preset-env",
+                                {
+                                    "targets":{
+                                    // 指定要兼容的浏览器版本；
+                                        "chrome": "58",
+                                        "ie": "11"
+                                    },
+                                    "corejs":"3",
+                                    "useBuiltIns": "usage"
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    loader: "ts-loader",
+
+                }
+            ],
+            exclude: /node_modules/
+        }
+    ]
 }
 ```
 
-设置后编译后的`js`文件将会生成到`dist`目录
-
-**outFile**
-
-* 将所有的文件编译为一个`js`文件
-* 默认会将所有的编写在全局作用域中的代码合并为一个`js`文件，如果`module`制定了`None`、`System`或`AMD`则会将模块一起合并到文件之中
-* 示例：
-
-```json
-"compilerOptions": {
-	"target": "ES6",
-    "lib": ["ES6", "DOM"],
-    "module": "CommonJS"
-    "outDir": "dist"
-    "outFile": "dist/app.js"
-}
-```
-
-**allowJs**
-
-* 是否对`js`文件编译
-
-**checkJs**
-
-* 是否对`js`文件进行检查
-* 示例：
-
-```javascript
-"compilerOptions": {
-    "allowJs": true,
-    "checkJs": true
-}
-```
-
-**removeComments**
-
-* 是否删除注释
-* 默认值：`false`
-
-**严格检查**：`alwaysStrict`、`strict`
-
-**noEmit**
-
-* 不对代码进行编译
-* 默认值：`false`
-
-**noEmitOnError**
-
-* 有错误的情况下不进行编译
-* 默认值：`false`
-
-# 
+以上代码解决浏览器兼容问题，在配置选项的`targets`中指定要兼容的浏览器版本；
