@@ -11,11 +11,17 @@ npm i -D webpack webpack-cli webpack-dev-server typescript ts-loader clean-webpa
 共安装了7个包:
 
 webpack：构建工具 webpack
+
 webpack-cli：webpack 的命令行工具
+
 webpack-dev-server：webpack 的开发服务器
+
 typescript：ts 编译器
+
 ts-loader：ts 加载器，用于在 webpack 中编译 ts 文件
+
 html-webpack-plugin：webpack 中 html 插件，用来自动创建 html 文件
+
 clean-webpack-plugin：webpack 中的清除插件，每次构建都会先清除目录
 
 2、配置 webpack
